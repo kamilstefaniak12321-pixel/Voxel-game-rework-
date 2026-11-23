@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-@@SCRIPT_HASH@@'; style-src 'sha256-@@STYLE_HASH@@'; img-src data:; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#293a33">
+  <link rel="icon" href="@@ICON@@">
+  <title>Various Roots</title>
+  <!-- STYLE -->
+</head>
+<body data-state="welcome">
+  <canvas id="world" aria-label="Płaski świat Various Roots"></canvas>
+  <main id="menu">
+    <div class="intro">
+      <img class="mark" alt="" src="@@ICON@@" width="64" height="64">
+      <h1 id="title">Various Roots</h1>
+      <p class="controls desktop-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ruch <i>·</i> mysz rozglądanie <i>·</i> <kbd>Spacja</kbd> skok <i>·</i> <kbd>Esc</kbd> pauza</p>
+      <p class="controls touch-help">Lewy joystick porusza postacią. Przesuń palcem po prawej stronie, żeby się rozejrzeć.</p>
+      <button id="start" type="button" disabled><span id="action">Ładowanie…</span><span class="go" aria-hidden="true">→</span></button>
+      <p id="error" role="alert" hidden></p>
+    </div>
+  </main>
+  <div id="aim" aria-hidden="true"></div>
+  <div id="touch-controls">
+    <button id="pause" type="button" aria-label="Pauza"><span class="pause-icon" aria-hidden="true"></span></button>
+    <div id="stick" role="group" aria-label="Joystick ruchu"><span id="knob"></span></div>
+    <button id="jump" type="button" aria-label="Skok"><span aria-hidden="true">↑</span></button>
+  </div>
+  <!-- GAME -->
+</body>
+</html>

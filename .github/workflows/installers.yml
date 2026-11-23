@@ -1,0 +1,102 @@
+name: Instalatory Various Roots
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Zbuduj instalator x64
+        shell: pwsh
+        run: |
+          $compiler = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+          if (!(Test-Path $compiler)) { choco install nsis -y --no-progress }
+          python scripts/package-windows.py --makensis $compiler
+      - name: Sprawdź instalację i odinstalowanie
+        shell: pwsh
+        run: |
+          $setup = (Get-ChildItem out/*-Setup.exe).FullName
+          $process = Start-Process $setup '/S' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Błąd instalacji' }
+          $dir = "$env:LOCALAPPDATA\Programs\Various Roots"
+          if (!(Test-Path "$dir\runtime\VariousRoots.exe")) { throw 'Brak pliku gry' }
+          if ((Get-FileHash "$dir\runtime\resources\app\index.html").Hash -ne (Get-FileHash dist/index.html).Hash) { throw 'Niezgodne zasoby gry' }
+          $uninstaller = Start-Process "$dir\Uninstall.exe" -ArgumentList '/S', "_?=$dir" -Wait -PassThru
+          if ($uninstaller.ExitCode -ne 0 -or (Test-Path "$dir\runtime\VariousRoots.exe")) { throw 'Błąd odinstalowania' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Windows-x64
+          path: out/*-Setup.exe
+          if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Przygotuj narzędzia SDK
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
+      - name: Zbuduj podpisany APK
+        env:
+          PREVIEW_KEY: ${{ github.event_name != 'pull_request' && secrets.ANDROID_PREVIEW_KEYSTORE_BASE64 || '' }}
+        shell: bash
+        run: |
+          keystore="$RUNNER_TEMP/various-roots-preview.keystore"
+          if [[ -n "$PREVIEW_KEY" ]]; then
+            printf '%s' "$PREVIEW_KEY" | base64 --decode > "$keystore"
+          fi
+          python3 scripts/package-android.py --debug-keystore "$keystore"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Android-APK
+          path: out/*.apk
+          if-no-files-found: error
+
+  preview:
+    needs: [windows, android]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency: publish-various-roots-preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Dodaj nowe wydanie testowe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$(node -p "require('./package.json').version")"
+          if gh release view "$tag" >/dev/null 2>&1; then exit 0; fi
+          gh release create "$tag" --target "$GITHUB_SHA" --prerelease \
+            --title "Various Roots $tag" --notes "Wersja testowa na Androida i Windows x64. Pobierz instalator dla swojego urządzenia poniżej." out/*.apk out/*.exe
