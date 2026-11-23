@@ -16,12 +16,13 @@ const bundle = await build({
   loader: { '.png': 'dataurl' },
 });
 const script = bundle.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
-const [template, style, icon, license] = await Promise.all([
+const [template, styleSource, icon, license] = await Promise.all([
   readFile('src/index.html', 'utf8'),
   readFile('src/game.css', 'utf8'),
   readFile('assets/icon.png'),
   readFile('node_modules/three/LICENSE', 'utf8'),
 ]);
+const style = styleSource.replace(/\r\n?/g, '\n');
 const hash = (value) => createHash('sha256').update(value).digest('base64');
 const html = template
   .replace('@@SCRIPT_HASH@@', hash(script))

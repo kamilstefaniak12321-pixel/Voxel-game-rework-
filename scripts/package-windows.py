@@ -53,7 +53,7 @@ def main():
         }), encoding="utf-8")
         prefix = "/D" if os.name == "nt" else "-D"
         subprocess.run([args.makensis, prefix + "VERSION=" + version,
-                        prefix + "OUTPUT_FILE=" + str(target), prefix + "RUNTIME_DIR=" + str(runtime),
+                        prefix + "OUTPUT_FILE=" + str(target), prefix + "RUNTIME_FILES=" + str(runtime / "*"),
                         prefix + "ICON_FILE=" + str(windows / "icon.ico"), str(windows / "setup.nsi")], check=True)
     print(target)
 

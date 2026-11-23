@@ -15,7 +15,7 @@ APK ma podpis testowy. Aktualizację w miejscu można zainstalować, jeśli obie
 
 ## Uruchomienie ze źródeł
 
-Zainstaluj Node.js 24 i wykonaj w głównym katalogu projektu:
+Zainstaluj Node.js 24 i wykonaj poniższe polecenia w głównym katalogu projektu.
 
 ```sh
 npm ci

@@ -28,7 +28,7 @@ VIAddVersionKey "LegalCopyright" "Various Roots"
 Section
   SetShellVarContext current
   SetOutPath "$INSTDIR\runtime"
-  File /r "${RUNTIME_DIR}/*"
+  File /r "${RUNTIME_FILES}"
   SetOutPath "$INSTDIR"
   File /oname=icon.ico "${ICON_FILE}"
   WriteUninstaller "$INSTDIR\Uninstall.exe"

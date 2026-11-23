@@ -29,7 +29,7 @@ jobs:
           $compiler = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
           if (!(Test-Path $compiler)) { choco install nsis -y --no-progress }
           python scripts/package-windows.py --makensis $compiler
-      - name: Sprawdź instalację i odinstalowanie
+      - name: Sprawdź instalację, grę i odinstalowanie
         shell: pwsh
         run: |
           $setup = (Get-ChildItem out/*-Setup.exe).FullName
@@ -38,6 +38,8 @@ jobs:
           $dir = "$env:LOCALAPPDATA\Programs\Various Roots"
           if (!(Test-Path "$dir\runtime\VariousRoots.exe")) { throw 'Brak pliku gry' }
           if ((Get-FileHash "$dir\runtime\resources\app\index.html").Hash -ne (Get-FileHash dist/index.html).Hash) { throw 'Niezgodne zasoby gry' }
+          node tests/installed-windows.mjs "$dir\runtime\VariousRoots.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $uninstaller = Start-Process "$dir\Uninstall.exe" -ArgumentList '/S', "_?=$dir" -Wait -PassThru
           if ($uninstaller.ExitCode -ne 0 -or (Test-Path "$dir\runtime\VariousRoots.exe")) { throw 'Błąd odinstalowania' }
       - uses: actions/upload-artifact@v4
