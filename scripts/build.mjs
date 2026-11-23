@@ -24,7 +24,9 @@ const [template, styleSource, icon, license] = await Promise.all([
 ]);
 const style = styleSource.replace(/\r\n?/g, '\n');
 const hash = (value) => createHash('sha256').update(value).digest('base64');
+const version = JSON.parse(await readFile('package.json', 'utf8')).version;
 const html = template
+  .replace('@@VERSION@@', version)
   .replace('@@SCRIPT_HASH@@', hash(script))
   .replace('@@STYLE_HASH@@', hash(style))
   .replaceAll('@@ICON@@', 'data:image/png;base64,' + icon.toString('base64'))
@@ -33,3 +35,8 @@ const html = template
 await mkdir('dist', { recursive: true });
 await writeFile('dist/index.html', html);
 console.log('dist/index.html (' + Math.round(Buffer.byteLength(html) / 1024) + ' KiB)');
+
+await build({
+  entryPoints: ['packaging/windows/updates.cjs'], outfile: 'out/desktop/updates.cjs',
+  bundle: true, platform: 'node', format: 'cjs', external: ['electron'],
+});

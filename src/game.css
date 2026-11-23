@@ -46,3 +46,6 @@ body[data-state="error"] #start, body[data-state="error"] .controls { display: n
   h1 { font-size: clamp(44px, 12vh, 62px); }
   .controls { margin: 10px 0 15px; }
 }
+
+#updates { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; margin-top: 12px; font-size: 13px; }
+#updates button, #updates a { background: transparent; padding: 4px 0; border: 0; color: inherit; text-decoration: underline; }

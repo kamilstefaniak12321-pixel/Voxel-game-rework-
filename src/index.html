@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-@@SCRIPT_HASH@@'; style-src 'sha256-@@STYLE_HASH@@'; img-src data:; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-@@SCRIPT_HASH@@'; style-src 'sha256-@@STYLE_HASH@@'; img-src data:; connect-src https://api.github.com/repos/kamilstefaniak12321-pixel/Voxel-game-rework-/releases; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#293a33">
   <link rel="icon" href="@@ICON@@">
@@ -18,6 +18,11 @@
       <p class="controls desktop-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ruch <i>·</i> mysz rozglądanie <i>·</i> <kbd>Spacja</kbd> skok <i>·</i> <kbd>Esc</kbd> pauza</p>
       <p class="controls touch-help">Lewy joystick porusza postacią. Przesuń palcem po prawej stronie, żeby się rozejrzeć.</p>
       <button id="start" type="button" disabled><span id="action">Ładowanie…</span><span class="go" aria-hidden="true">→</span></button>
+      <div id="updates"><span>Wersja <span id="installed-version">@@VERSION@@</span></span>
+        <span id="update-status" role="status"></span>
+        <button id="update-action" type="button" hidden></button>
+        <a id="release-notes" hidden>Zobacz zmiany</a>
+      </div>
       <p id="error" role="alert" hidden></p>
     </div>
   </main>

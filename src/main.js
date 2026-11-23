@@ -1,3 +1,4 @@
+import { initUpdates } from './update-menu.js';
 import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { FlatWorld } from './world.js';
 import { EYE_HEIGHT, STEP, look, movePlayer, spawnPlayer } from './player.js';
@@ -97,6 +98,7 @@ async function boot() {
   });
 }
 
+initUpdates();
 boot().catch((error) => {
   console.error(error);
   document.body.dataset.state = 'error';

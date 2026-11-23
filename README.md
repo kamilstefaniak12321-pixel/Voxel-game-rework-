@@ -38,7 +38,13 @@ Po zbudowaniu gry uruchom odpowiedni skrypt w Pythonie 3.11 lub nowszym. Pliki w
 
 Opcja `--debug-keystore ŚCIEŻKA` wybiera klucz testowy Androida. Domyślnie skrypt używa `~/.android/debug.keystore` lub katalogu `ANDROID_USER_HOME`. Przy pierwszym buildzie tworzy klucz, jeśli plik jeszcze nie istnieje. Zachowaj go, żeby kolejne APK mogły aktualizować tę samą instalację.
 
-GitHub Actions sprawdza kod i buduje oba instalatory. Po dodaniu nowego numeru wersji do `package.json` na `main` zamieszcza je w wydaniu testowym. W kolejnych buildach tego samego numeru pliki są dostępne w zakładce Actions. Opcjonalny sekret `ANDROID_PREVIEW_KEYSTORE_BASE64` przechowuje zakodowaną w Base64 kopię klucza testowego do podpisywania następnych wydań tym samym certyfikatem.
+## Aktualizacje
+
+Od 0.1.2 gra sprawdza wydania GitHuba przy otwieraniu menu startowego, również testowe. Można wejść do świata w trakcie sprawdzania i bez internetu. Windows pobiera instalator w tle, sprawdza sumy kontrolne i po kliknięciu w menu instaluje go oraz uruchamia grę. Android otwiera właściwy APK w przeglądarce, a gracz potwierdza instalację.
+
+Pierwsza instalacja 0.1.2 jest ręczna. Na Androidzie przejście z 0.1.0 lub 0.1.1 wymaga usunięcia poprzedniej wersji z powodu różnicy podpisów.
+
+GitHub Actions po zmianie wersji na `main` publikuje APK, instalator Windows i manifest `latest.yml`. Opis wydania można umieścić w `releases/vX.Y.Z.md`. Android używa stałego klucza testowego od 0.1.2. Dla tej wersji workflow może pobrać wcześniej podpisany APK z przypiętego commitu i porównuje jego podpis oraz zasoby z lokalnym buildem. Dla kolejnych wydań właściciel dodaje klucz w Base64 jako sekret repozytorium `ANDROID_PREVIEW_KEYSTORE_BASE64`. Każde wydanie musi mieć ten sam certyfikat. Testy pull requestów mogą używać tymczasowego klucza.
 
 ## Gdzie edytować grę
 

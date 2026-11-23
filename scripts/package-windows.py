@@ -1,5 +1,7 @@
 """Build the x64 Windows installer using NSIS on Linux, macOS or Windows."""
 import argparse
+import base64
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -47,6 +49,9 @@ def main():
         app.mkdir()
         shutil.copy(web, app)
         shutil.copy(windows / "main.cjs", app)
+        shutil.copy(windows / "preload.cjs", app)
+        shutil.copy(ROOT / "out/desktop/updates.cjs", app)
+        (runtime / "resources/app-update.yml").write_text("updaterCacheDirName: various-roots-preview-updater\n", encoding="utf-8")
         shutil.copy(ROOT / "assets/icon.png", app)
         (app / "package.json").write_text(json.dumps({
             "name": "various-roots", "productName": "Various Roots", "version": version, "main": "main.cjs"
@@ -55,6 +60,12 @@ def main():
         subprocess.run([args.makensis, prefix + "VERSION=" + version,
                         prefix + "OUTPUT_FILE=" + str(target), prefix + "RUNTIME_FILES=" + str(runtime / "*"),
                         prefix + "ICON_FILE=" + str(windows / "icon.ico"), str(windows / "setup.nsi")], check=True)
+    with target.open("rb") as stream:
+        checksum = base64.b64encode(hashlib.file_digest(stream, "sha512").digest()).decode("ascii")
+    manifest = {"version": version, "path": target.name, "sha512": checksum,
+                "files": [{"url": target.name, "sha512": checksum, "size": target.stat().st_size}],
+                "releaseDate": datetime.now(timezone.utc).isoformat()}
+    (out / "latest.yml").write_text(json.dumps(manifest), encoding="utf-8")
     print(target)
 
 

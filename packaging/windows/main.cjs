@@ -10,11 +10,12 @@ app.whenReady().then(() => {
     icon: path.join(__dirname, 'icon.png'),
     width: 1280, height: 720, minWidth: 640, minHeight: 400,
     show: false, backgroundColor: '#293a33',
-    webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
+    webPreferences: { preload: path.join(__dirname, "preload.cjs"), sandbox: true, contextIsolation: true, nodeIntegration: false },
   });
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', (event) => event.preventDefault());
   mainWindow.once('ready-to-show', () => { mainWindow.maximize(); mainWindow.show(); });
+  require('./updates.cjs').attachUpdates(mainWindow);
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 });
 app.on('window-all-closed', () => app.quit());

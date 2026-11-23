@@ -40,12 +40,16 @@ jobs:
           if ((Get-FileHash "$dir\runtime\resources\app\index.html").Hash -ne (Get-FileHash dist/index.html).Hash) { throw 'Niezgodne zasoby gry' }
           node tests/installed-windows.mjs "$dir\runtime\VariousRoots.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/update-installed-windows.mjs "$dir\runtime\VariousRoots.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $uninstaller = Start-Process "$dir\Uninstall.exe" -ArgumentList '/S', "_?=$dir" -Wait -PassThru
           if ($uninstaller.ExitCode -ne 0 -or (Test-Path "$dir\runtime\VariousRoots.exe")) { throw 'Błąd odinstalowania' }
       - uses: actions/upload-artifact@v4
         with:
           name: Windows-x64
-          path: out/*-Setup.exe
+          path: |
+            out/*-Setup.exe
+            out/latest.yml
           if-no-files-found: error
 
   android:
@@ -72,9 +76,28 @@ jobs:
         run: |
           keystore="$RUNNER_TEMP/various-roots-preview.keystore"
           if [[ -n "$PREVIEW_KEY" ]]; then
+            umask 077
             printf '%s' "$PREVIEW_KEY" | base64 --decode > "$keystore"
+            python3 scripts/package-android.py --debug-keystore "$keystore"
+          elif [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            python3 scripts/package-android.py --debug-keystore "$keystore"
+          elif [[ "$(node -p "require('./package.json').version")" == 0.1.2 ]]; then
+            mkdir -p out
+            package=Various-Roots-0.1.2-Android.apk
+            curl --fail --location --retry 3 "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/1aae15aea2440818e74f7edc15493092f898c73f/$package" --output "out/$package"
+          else
+            echo "::error::Dodaj sekret ANDROID_PREVIEW_KEYSTORE_BASE64 z kluczem wydania 0.1.2."
+            exit 1
           fi
-          python3 scripts/package-android.py --debug-keystore "$keystore"
+          if [[ "$GITHUB_EVENT_NAME" != pull_request ]]; then
+            sdk="$ANDROID_HOME/build-tools/35.0.0"
+            certificate=$("$sdk/apksigner" verify --print-certs out/*.apk | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
+            test "$certificate" = 94d5d55afc87237b118718af79f62b57bd5bc167a856281082b997be17f70a3b
+            unzip -p out/*.apk assets/index.html | cmp - dist/index.html
+            version=$(node -p "require('./package.json').version")
+            "$sdk/aapt" dump badging out/*.apk > "$RUNNER_TEMP/package-info"
+            head -1 "$RUNNER_TEMP/package-info" | grep -F "package: name='pl.variousroots.rework'" | grep -F "versionName='$version'"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: Android-APK
@@ -100,5 +123,7 @@ jobs:
         run: |
           tag="v$(node -p "require('./package.json').version")"
           if gh release view "$tag" >/dev/null 2>&1; then exit 0; fi
+          notes_args=(--generate-notes)
+          if [[ -f "releases/$tag.md" ]]; then notes_args=(--notes-file "releases/$tag.md"); fi
           gh release create "$tag" --target "$GITHUB_SHA" --prerelease \
-            --title "Various Roots $tag" --notes "Wersja testowa na Androida i Windows x64. Pobierz instalator dla swojego urządzenia poniżej." out/*.apk out/*.exe
+            --title "Various Roots $tag" "${notes_args[@]}" out/*.apk out/*.exe out/latest.yml

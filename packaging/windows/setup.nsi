@@ -1,5 +1,6 @@
 Unicode true
 !include "MUI2.nsh"
+!include "FileFunc.nsh"
 Name "Various Roots"
 OutFile "${OUTPUT_FILE}"
 InstallDir "$LOCALAPPDATA\Programs\Various Roots"
@@ -51,3 +52,28 @@ Section "Uninstall"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir "$INSTDIR"
 SectionEnd
+
+Function .onInit
+  ${GetParameters} $0
+  ClearErrors
+  ${GetOptions} $0 "--updated" $1
+  IfErrors done
+  ReadEnvStr $0 VARIOUS_ROOTS_UPDATE_PID
+  StrCmp $0 "" done
+  System::Call 'kernel32::OpenProcess(i 0x100000, i 0, i r0) p.r1'
+  StrCmp $1 0 done
+  System::Call 'kernel32::WaitForSingleObject(p r1, i 30000) i.r2'
+  System::Call 'kernel32::CloseHandle(p r1)'
+  StrCmp $2 0 done
+  Abort
+  done:
+FunctionEnd
+
+Function .onInstSuccess
+  ${GetParameters} $0
+  ClearErrors
+  ${GetOptions} $0 "--force-run" $1
+  IfErrors done
+  Exec '"$INSTDIR\runtime\VariousRoots.exe"'
+  done:
+FunctionEnd
