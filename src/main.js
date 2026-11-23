@@ -2,6 +2,7 @@ import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { FlatWorld } from './world.js';
 import { EYE_HEIGHT, STEP, look, movePlayer, spawnPlayer } from './player.js';
 import { makeSky, makeTerrainView } from './terrain.js';
+import { CameraSway } from './camera-sway.js';
 import { GameInput } from './input.js';
 
 async function boot() {
@@ -18,6 +19,7 @@ async function boot() {
   world.update(0, 0);
   updateTerrain(world);
   const player = spawnPlayer(world);
+  const sway = new CameraSway();
   let previous = { x: player.x, y: player.y, z: player.z };
   let lastTime = 0;
   let accumulated = 0;
@@ -30,7 +32,7 @@ async function boot() {
       previous.y + (player.y - previous.y) * blend + EYE_HEIGHT,
       previous.z + (player.z - previous.z) * blend,
     );
-    camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
+    camera.rotation.set(player.pitch, player.yaw, sway.sample(blend), 'YXZ');
     sky.position.copy(camera.position);
     renderer.render(scene, camera);
   }
@@ -51,7 +53,12 @@ async function boot() {
     while (accumulated >= STEP) {
       previous.x = player.x; previous.y = player.y; previous.z = player.z;
       const { strafe, forward, jump } = input.read();
+      const wasGrounded = player.grounded;
       movePlayer(world, player, strafe, forward, jump, STEP);
+      const groundDistance = wasGrounded && player.grounded
+        ? Math.hypot(player.x - previous.x, player.z - previous.z)
+        : 0;
+      sway.advance(groundDistance, STEP);
       accumulated -= STEP;
     }
     world.update(player.x, player.z);
@@ -83,6 +90,7 @@ async function boot() {
     document.body.dataset.state = 'playing';
     input.start(event.pointerType);
     accumulated = 0;
+    sway.previousRoll = sway.roll;
     previous = { x: player.x, y: player.y, z: player.z };
     lastTime = performance.now();
     frameId = requestAnimationFrame(frame);

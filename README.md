@@ -2,6 +2,8 @@
 
 Pierwsza wersja od podstaw. Gracz porusza się w widoku pierwszoosobowym po płaskim świecie. Każda kolumna składa się z dwunastu bloków kamienia, trzech bloków ziemi i jednego bloku ziemi z trawą. Świat powstaje po kawałku podczas marszu w dowolnym kierunku.
 
+W wersji 0.1.1 kamera lekko przechyla się na boki w rytm marszu. Przy pełnej prędkości wychylenie sięga jednego stopnia w każdą stronę. Wolniejszy chód zmniejsza amplitudę i tempo, a zatrzymanie lub skok płynnie poziomują widok.
+
 ## Pobieranie i sterowanie
 
 Instalatory są w [wydaniach gry](https://github.com/kamilstefaniak12321-pixel/Voxel-game-rework-/releases). Oba zawierają pełną grę i działają offline.
