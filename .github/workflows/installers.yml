@@ -53,6 +53,8 @@ jobs:
           if-no-files-found: error
 
   android:
+    outputs:
+      signing_missing: ${{ steps.package.outputs.signing_missing }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,6 +72,7 @@ jobs:
       - name: Przygotuj narzędzia SDK
         run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
       - name: Zbuduj podpisany APK
+        id: package
         env:
           PREVIEW_KEY: ${{ github.event_name != 'pull_request' && secrets.ANDROID_PREVIEW_KEYSTORE_BASE64 || '' }}
         shell: bash
@@ -86,6 +89,7 @@ jobs:
             package=Various-Roots-0.1.2-Android.apk
             curl --fail --location --retry 3 "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/1aae15aea2440818e74f7edc15493092f898c73f/$package" --output "out/$package"
           else
+            echo "signing_missing=true" >> "$GITHUB_OUTPUT"
             echo "::error::Dodaj sekret ANDROID_PREVIEW_KEYSTORE_BASE64 z kluczem wydania 0.1.2."
             exit 1
           fi
@@ -106,7 +110,11 @@ jobs:
 
   preview:
     needs: [windows, android]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      always() && !cancelled() && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      needs.windows.result == 'success' &&
+      (needs.android.result == 'success' || needs.android.outputs.signing_missing == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -122,8 +130,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="v$(node -p "require('./package.json').version")"
-          if gh release view "$tag" >/dev/null 2>&1; then exit 0; fi
+          version="${tag#v}"
+          apk="out/Various-Roots-$version-Android.apk"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            # A signed APK may become available after the Windows release.
+            if [[ -f "$apk" ]]; then
+              assets=$(gh release view "$tag" --json assets --jq '.assets[].name')
+              if ! grep -Fxq "$(basename "$apk")" <<< "$assets"; then
+                source_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq .object.sha)
+                if [[ "$source_sha" != "$GITHUB_SHA" ]]; then
+                  echo "::error::Uruchom ponownie zadanie dla commitu wydania $tag."
+                  exit 1
+                fi
+                gh release upload "$tag" "$apk"
+              fi
+            fi
+            exit 0
+          fi
+          files=("out/Various-Roots-$version-Windows-x64-Setup.exe" out/latest.yml)
+          if [[ -f "$apk" ]]; then files+=("$apk"); fi
           notes_args=(--generate-notes)
           if [[ -f "releases/$tag.md" ]]; then notes_args=(--notes-file "releases/$tag.md"); fi
           gh release create "$tag" --target "$GITHUB_SHA" --prerelease \
-            --title "Various Roots $tag" "${notes_args[@]}" out/*.apk out/*.exe out/latest.yml
+            --title "Various Roots $tag" "${notes_args[@]}" "${files[@]}"
