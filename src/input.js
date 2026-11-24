@@ -14,7 +14,6 @@ export class GameInput {
 
     window.addEventListener('keydown', (event) => {
       if (!this.active) return;
-      if (event.code === 'Escape') { onPause(); return; }
       if (!MOVE_KEYS.has(event.code)) return;
       event.preventDefault();
       if (event.code === 'Space' && !event.repeat) this.jumpQueued = true;
@@ -72,7 +71,6 @@ export class GameInput {
     this.jumpButton.addEventListener('pointerdown', (event) => {
       if (this.active) { event.preventDefault(); this.jumpQueued = true; }
     });
-    document.querySelector('#pause').addEventListener('click', onPause);
     window.addEventListener('blur', onPause);
     document.addEventListener('visibilitychange', () => { if (document.hidden) onPause(); });
   }
@@ -82,8 +80,7 @@ export class GameInput {
     document.body.classList.toggle('touch', value);
   }
 
-  start(pointerType) {
-    if (pointerType) this.setTouch(pointerType === 'touch' || pointerType === 'pen');
+  start() {
     this.reset();
     this.active = true;
     if (!this.touch && this.canvas.requestPointerLock) {
@@ -94,6 +91,7 @@ export class GameInput {
 
   stop() {
     this.active = false;
+    this.locked = false;
     if (document.pointerLockElement === this.canvas) document.exitPointerLock();
     this.reset();
   }

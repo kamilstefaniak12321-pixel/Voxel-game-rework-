@@ -22,6 +22,33 @@ try {
   assert(!before.equals(await page.screenshot()), 'Walking must move the ground on screen');
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => document.body.dataset.state === 'paused');
+  const state = expected => page.waitForFunction(value => document.body.dataset.state === value, expected);
+  await page.locator('#open-settings').click();
+  await state('settings');
+  await page.locator('#sway').focus();
+  await page.keyboard.press('Home');
+  await page.locator('#radius').focus();
+  await page.keyboard.press('End');
+  assert.equal(await page.locator('#sway-value').textContent(), '0%');
+  assert.equal(await page.locator('#radius-value').textContent(), '8');
+  await page.keyboard.down('Escape');
+  await state('paused');
+  await page.keyboard.down('Escape'); // OS key repeat must leave this menu open.
+  await page.keyboard.up('Escape');
+  assert.equal(await page.locator('body').getAttribute('data-state'), 'paused');
+  for (let i = 0; i < 2; i++) {
+    await page.keyboard.press('Escape');
+    await state('playing');
+    await page.waitForFunction(() => document.pointerLockElement === document.querySelector('#world'));
+    await page.keyboard.press('Escape');
+    await state('paused');
+  }
+  await page.reload();
+  await page.locator('#open-settings').click();
+  assert.equal(await page.locator('#sway').inputValue(), '0');
+  assert.equal(await page.locator('#radius').inputValue(), '8');
+  await page.keyboard.press('Escape');
+  await state('welcome');
   assert.deepEqual(errors, []);
 } finally {
   await app.close();

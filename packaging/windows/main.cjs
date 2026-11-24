@@ -12,6 +12,15 @@ app.whenReady().then(() => {
     show: false, backgroundColor: '#293a33',
     webPreferences: { preload: path.join(__dirname, "preload.cjs"), sandbox: true, contextIsolation: true, nodeIntegration: false },
   });
+  // Handle Esc before Chromium consumes it as a native pointer-lock exit.
+  // Forward one user gesture so resuming from the keyboard can recapture the mouse.
+  mainWindow.webContents.on('before-input-event', (event, key) => {
+    if (key.key !== 'Escape') return;
+    event.preventDefault();
+    if (key.type === 'keyDown' && !key.isAutoRepeat) {
+      mainWindow.webContents.executeJavaScript('window.backVariousRoots?.()', true).catch(() => {});
+    }
+  });
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', (event) => event.preventDefault());
   mainWindow.once('ready-to-show', () => { mainWindow.maximize(); mainWindow.show(); });

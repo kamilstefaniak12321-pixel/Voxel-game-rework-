@@ -4,6 +4,10 @@ Pierwsza wersja od podstaw. Gracz porusza się w widoku pierwszoosobowym po pła
 
 W wersji 0.1.1 kamera lekko przechyla się na boki w rytm marszu. Przy pełnej prędkości wychylenie sięga jednego stopnia w każdą stronę. Wolniejszy chód zmniejsza amplitudę i tempo, a zatrzymanie lub skok płynnie poziomują widok.
 
+W wersji 0.1.3 ustawienia są dostępne z menu startowego i z pauzy. Kołysanie kamery ma zakres 0–150% (domyślnie 100%, czyli maksymalnie 1°). Zasięg terenu to promień 2–8 chunków (domyślnie 5); mgła dopasowuje się do jego krawędzi. Obie zmiany działają od razu i zapisują się na urządzeniu.
+
+Esc podczas gry otwiera pauzę, ponowne naciśnięcie wznawia grę. W ustawieniach cofa do menu, z którego je otwarto. Analogicznie działają ekranowy przycisk w prawym górnym rogu i systemowy przycisk Wstecz na Androidzie.
+
 ## Pobieranie i sterowanie
 
 Instalatory są w [wydaniach gry](https://github.com/kamilstefaniak12321-pixel/Voxel-game-rework-/releases). Oba zawierają pełną grę i działają offline.

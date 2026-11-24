@@ -22,14 +22,17 @@ export class FlatWorld {
   constructor(radius = 5) {
     this.radius = radius;
     this.chunks = new Map();
+    this.revision = 0;
     this.centerX = null;
     this.centerZ = null;
   }
 
-  update(x, z) {
+  update(x, z, radius = this.radius) {
     const cx = Math.floor(x / CHUNK_SIZE);
     const cz = Math.floor(z / CHUNK_SIZE);
-    if (cx === this.centerX && cz === this.centerZ) return;
+    if (cx === this.centerX && cz === this.centerZ && radius === this.radius) return;
+    this.radius = radius;
+    this.revision++;
     this.centerX = cx;
     this.centerZ = cz;
     for (const [key, chunk] of this.chunks) {

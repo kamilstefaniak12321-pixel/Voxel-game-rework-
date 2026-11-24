@@ -49,3 +49,17 @@ body[data-state="error"] #start, body[data-state="error"] .controls { display: n
 
 #updates { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; margin-top: 12px; font-size: 13px; }
 #updates button, #updates a { background: transparent; padding: 4px 0; border: 0; color: inherit; text-decoration: underline; }
+
+.secondary { min-height: 44px; padding: 8px 18px; border: 1px solid #d5ddbc99; background: #23392de6; border-radius: 5px; font-weight: 600; }
+.secondary:hover { background: #344d3c; }
+#settings-panel { width: min(100%, 410px); padding: 18px 22px; background: #24382ff2; border: 1px solid #d5ddbc66; border-radius: 7px; }
+#settings-title { margin: 0 0 12px; font: 500 clamp(31px, 5vh, 48px)/1.1 Georgia, serif; }
+#settings-panel label { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
+#settings-panel output { color: #e4edbe; font-variant-numeric: tabular-nums; }
+#settings-panel input { display: block; width: 100%; margin: 0; height: 28px; accent-color: #dbe8b6; }
+#settings-panel small { display: block; color: #ced8c6; margin-bottom: 12px; }
+body.touch:is([data-state="paused"], [data-state="settings"]) #touch-controls { display: block; }
+body:not([data-state="playing"]) :is(#stick, #jump) { display: none; }
+body:not([data-state="playing"]) .pause-icon { width: 12px; height: 12px; border-width: 0 0 3px 3px; transform: rotate(45deg); }
+body[data-state="settings"] #menu { align-items: safe center; padding-block: 10px; overflow-y: auto; touch-action: pan-y; }
+body[data-state="error"] #open-settings { display: none; }

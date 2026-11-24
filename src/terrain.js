@@ -37,14 +37,12 @@ export async function makeTerrainView(scene, renderer) {
   const group = new Group();
   scene.add(group);
   const meshes = new Map();
-  let lastX = null;
-  let lastZ = null;
+  let revision = -1;
 
   // All columns have the same height. Only their top is exposed to air.
   return (world) => {
-    if (world.centerX === lastX && world.centerZ === lastZ) return;
-    lastX = world.centerX;
-    lastZ = world.centerZ;
+    if (world.revision === revision) return;
+    revision = world.revision;
     for (const [key, mesh] of meshes) {
       if (!world.chunks.has(key)) {
         group.remove(mesh);

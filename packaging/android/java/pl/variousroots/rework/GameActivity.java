@@ -30,6 +30,7 @@ public final class GameActivity extends Activity {
         game = new WebView(this);
         game.setBackgroundColor(0xff293a33);
         game.getSettings().setJavaScriptEnabled(true);
+        game.getSettings().setDomStorageEnabled(true);
         game.getSettings().setAllowFileAccess(false);
         game.getSettings().setAllowContentAccess(false);
         game.getSettings().setBlockNetworkLoads(false);
@@ -80,7 +81,7 @@ public final class GameActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        game.evaluateJavascript("window.pauseVariousRoots ? window.pauseVariousRoots() : false",
+        game.evaluateJavascript("window.backVariousRoots ? window.backVariousRoots() : false",
             consumed -> { if (!"true".equals(consumed)) finish(); });
     }
 

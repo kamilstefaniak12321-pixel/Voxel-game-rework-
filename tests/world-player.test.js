@@ -79,3 +79,18 @@ test('looking around clamps pitch and leaves the player position unchanged', () 
   assert(player.pitch < -1.4 && player.pitch > -Math.PI / 2);
   assert.deepEqual([player.x, player.y, player.z], [x, y, z]);
 });
+
+test('changing radius at rest updates the same world and preserves overlapping chunks', () => {
+  const world = new FlatWorld();
+  world.update(-1, 23);
+  const center = world.chunks.get('-1,1');
+  for (const radius of [8, 2, 5]) {
+    const revision = world.revision;
+    world.update(-1, 23, radius);
+    assert.equal(world.chunks.size, (2 * radius + 1) ** 2);
+    assert.equal(world.chunks.get('-1,1'), center);
+    assert.equal(world.revision, revision + 1);
+    world.update(-1, 23);
+    assert.equal(world.revision, revision + 1);
+  }
+});

@@ -18,6 +18,7 @@
       <p class="controls desktop-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ruch <i>·</i> mysz rozglądanie <i>·</i> <kbd>Spacja</kbd> skok <i>·</i> <kbd>Esc</kbd> pauza</p>
       <p class="controls touch-help">Lewy joystick porusza postacią. Przesuń palcem po prawej stronie, żeby się rozejrzeć.</p>
       <button id="start" type="button" disabled><span id="action">Ładowanie…</span><span class="go" aria-hidden="true">→</span></button>
+      <button id="open-settings" class="secondary" type="button" disabled>Ustawienia</button>
       <div id="updates"><span>Wersja <span id="installed-version">@@VERSION@@</span></span>
         <span id="update-status" role="status"></span>
         <button id="update-action" type="button" hidden></button>
@@ -25,6 +26,16 @@
       </div>
       <p id="error" role="alert" hidden></p>
     </div>
+    <section id="settings-panel" aria-labelledby="settings-title" hidden>
+      <h2 id="settings-title">Ustawienia</h2>
+      <label for="sway">Kołysanie kamery <output id="sway-value" for="sway"></output></label>
+      <input id="sway" type="range" aria-describedby="sway-hint">
+      <small id="sway-hint">0% wyłącza przechył podczas chodzenia.</small>
+      <label for="radius">Zasięg terenu w chunkach <output id="radius-value" for="radius"></output></label>
+      <input id="radius" type="range" aria-describedby="radius-hint">
+      <small id="radius-hint">Jeden chunk ma 16 bloków szerokości.</small>
+      <button id="settings-back" class="secondary" type="button">Wstecz</button>
+    </section>
   </main>
   <div id="aim" aria-hidden="true"></div>
   <div id="touch-controls">
