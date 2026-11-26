@@ -5,6 +5,7 @@ import {
 } from 'three';
 import grassImage from '../assets/grass.png';
 import { CHUNK_SIZE } from './world.js';
+import { makeGrassBatchFactory } from './grass-view.js';
 
 const HORIZON = 0xc3d6c9;
 const SEGMENTS = 4;
@@ -25,7 +26,10 @@ function makeTileGeometry() {
 }
 
 export async function makeTerrainView(scene, renderer) {
-  const grass = await new TextureLoader().loadAsync(grassImage);
+  const [grass, makeGrassBatch] = await Promise.all([
+    new TextureLoader().loadAsync(grassImage),
+    makeGrassBatchFactory(),
+  ]);
   grass.colorSpace = SRGBColorSpace;
   grass.magFilter = NearestFilter;
   grass.minFilter = LinearMipmapLinearFilter;
@@ -43,10 +47,11 @@ export async function makeTerrainView(scene, renderer) {
   return (world) => {
     if (world.revision === revision) return;
     revision = world.revision;
-    for (const [key, mesh] of meshes) {
+    for (const [key, { ground, tufts }] of meshes) {
       if (!world.chunks.has(key)) {
-        group.remove(mesh);
-        mesh.geometry.dispose();
+        group.remove(ground);
+        ground.geometry.dispose();
+        tufts?.dispose();
         meshes.delete(key);
       }
     }
@@ -62,11 +67,14 @@ export async function makeTerrainView(scene, renderer) {
       }
       geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
       const mesh = new Mesh(geometry, material);
-      mesh.position.set(x, world.surfaceAt(x, z), z);
+      const groundY = world.surfaceAt(x, z);
+      mesh.position.set(x, groundY, z);
       mesh.updateMatrix();
       mesh.matrixAutoUpdate = false;
+      const tufts = makeGrassBatch(world, chunk, groundY);
+      if (tufts) mesh.add(tufts);
       group.add(mesh);
-      meshes.set(key, mesh);
+      meshes.set(key, { ground: mesh, tufts });
     }
   };
 }

@@ -8,6 +8,8 @@ W wersji 0.1.3 ustawienia są dostępne z menu startowego i z pauzy. Kołysanie 
 
 Esc podczas gry otwiera pauzę, ponowne naciśnięcie wznawia grę. W ustawieniach cofa do menu, z którego je otwarto. Analogicznie działają ekranowy przycisk w prawym górnym rogu i systemowy przycisk Wstecz na Androidzie.
 
+Od 0.1.4 na płaskim terenie rosną kępki trawy z ośmiu dwustronnych płaszczyzn. Tymczasowy generator miesza duże plamy z luźnymi kępkami. Rozmieszczenie zależy od współrzędnych świata, więc odtwarza się po powrocie.
+
 ## Pobieranie i sterowanie
 
 Instalatory są w [wydaniach gry](https://github.com/kamilstefaniak12321-pixel/Voxel-game-rework-/releases). Oba zawierają pełną grę i działają offline.
@@ -58,3 +60,4 @@ GitHub Actions po zmianie wersji na `main` publikuje APK, instalator Windows i m
 | `src/player.js` | Prędkość chodu, grawitację, skok i kontakt z podłożem |
 | `src/input.js` | Klawiaturę, mysz, joystick i obsługę wielu palców |
 | `src/terrain.js`, `assets/grass.png` | Rysowanie powierzchni i pikselową teksturę trawy, po 16 pikseli na blok |
+| `src/grass-placement.js` | Tymczasowe rozmieszczenie kępek, wielkość plam i gęstość między nimi |
