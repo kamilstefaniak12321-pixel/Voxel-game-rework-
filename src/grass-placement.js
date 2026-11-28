@@ -1,3 +1,4 @@
+import { GRASS_VARIANTS } from './grass-tuft-variants.js';
 import { CHUNK_SIZE } from './world.js';
 
 // One tuft in every 8×8 area also grows outside patches. The remaining tufts
@@ -6,6 +7,7 @@ const BACKGROUND_CELL = 8;
 const PATCH_SPACING = 28;
 const EDGE_SPACING = 9;
 const MAX_EXTRA_CHANCE = 0.48;
+const variantSlots = GRASS_VARIANTS.flatMap(({ weight }, index) => Array(weight).fill(index));
 
 function hash(x, z, salt) {
   let bits = Math.imul(x, 0x1e35a7bd) ^ Math.imul(z, 0x94d049bb) ^ salt;
@@ -47,6 +49,7 @@ export function grassInChunk(cx, cz) {
           const jitter = hash(x, z, 829);
           const shape = hash(x, z, 1021);
           tufts.push({
+            variant: variantSlots[hash(x, z, 1487) % variantSlots.length],
             x: x + 0.1 + (jitter & 65535) / 65536 * 0.8,
             z: z + 0.1 + (jitter >>> 16) / 65536 * 0.8,
             yaw: (shape & 65535) / 65536 * Math.PI * 2,

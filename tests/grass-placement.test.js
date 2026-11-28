@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { grassInChunk } from '../src/grass-placement.js';
+import { GRASS_VARIANTS } from '../src/grass-tuft-variants.js';
 import { CHUNK_SIZE } from '../src/world.js';
 
 test('tufts regenerate identically and each belongs to one source block, including at negative coordinates', () => {
@@ -32,4 +33,28 @@ test('dense patches and sparse clearings coexist, with at least one tuft per 8×
   }
   assert(Math.min(...counts) <= 8);
   assert(Math.max(...counts) >= 64);
+});
+
+test('variants mix within a patch and follow the model weights over a wider area', () => {
+  const counts = GRASS_VARIANTS.map(() => 0);
+  let mixedDenseChunks = 0;
+  for (let cz = -8; cz <= 8; cz++) {
+    for (let cx = -8; cx <= 8; cx++) {
+      const tufts = grassInChunk(cx, cz);
+      const local = new Set();
+      for (const { variant } of tufts) {
+        assert(Number.isInteger(variant) && variant >= 0 && variant < counts.length);
+        counts[variant]++;
+        local.add(variant);
+      }
+      if (tufts.length >= 64 && local.size >= 4) mixedDenseChunks++;
+    }
+  }
+  assert(mixedDenseChunks > 0);
+  const count = counts.reduce((sum, n) => sum + n, 0);
+  const totalWeight = GRASS_VARIANTS.reduce((sum, model) => sum + model.weight, 0);
+  GRASS_VARIANTS.forEach(({weight}, i) => {
+    assert(counts[i] > 0);
+    assert(Math.abs(counts[i] / count - weight / totalWeight) < 0.02);
+  });
 });
